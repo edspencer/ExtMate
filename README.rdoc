@@ -1,0 +1,152 @@
+= ExtJS MVC Base App
+
+Ext MVC Application structure for any new MVC application.  Structure inspired by Ruby on Rails.
+
+== Installation
+
+Clone this as the starting point for your apps.  Place your cloned directory somewhere apache can serve it, then head to index.html:
+
+http://localhost/myDirectory/index.html
+
+You should see a default application set up and ready to go.
+
+== Prerequisites
+
+Most prerequisites are installed for you inside the vendor directory:
+
+* vendor/ext            - contains a copy of ExtJS v2.2.1 (debug version, production copy by defaults comes off the cachefly CDN)
+* vendor/mvc            - contains a copy of the latest stable version of Ext MVC (debug and minified versions)
+* vendor/screw-unit     - contains a copy of ScrewUnit, a BDD testing framework for JavaScipt
+* vendor/yui-compressor - contains a copy of the YUI compressor, which is used in the automatic build process
+
+Although is is not strictly a prerequisite, you are *strongly* advised to install Ruby and Rubygems as the scripts below will automate a lot of things 
+for you and save you a lot of time.  If you're running OSX you probably already have these, if you're on Windows it's a very simple install process.
+Take a look at http://rubyonrails.org/download for instructions (just the Ruby and RubyGems sections).
+
+If you don't intend to use the Ruby automation scripts, you can safely delete the script, vendor/mvc/scripts and vendor/yui-compressor folders.
+
+== Getting Started
+
+The only thing you need to change is the namespace your application will be using.  Choose a meaningful namespace for your application - e.g. for
+a blog application you might choose BlogApp, or something similar.  All of your code will sit under that namespace, like this:
+
+* BlogApp.models.Post                 // reference to a Post model constructor
+* BlogApp.controllers.IndexController // reference to a controller constructor
+* BlogApp.views.posts.New             // reference to a view constructor, usually an Ext.Panel subclass
+
+It doesn't matter if you don't know what those do yet, the important thing is that you don't pollute the global namespace.  The whole of Ext MVC is
+build around this idea.
+
+Once you've chosen your namespace, just run the following command:
+
+ruby script/setup MyAppNamespace
+
+This will update all files with the default namespace ('MyApp') with the namespace you specify.
+
+If you can't run the script, you can easily perform the setup yourself - just change the references from the default 'MyApp' namespace to your own 
+namespace in the following files:
+
+* app/OS.js
+* app/controllers/IndexController.js
+* app/views/index/Index.js
+* config/initialize.js
+* config/settings.yml
+
+Just use a simple find/replace all.
+
+== Build tools
+
+You need to ensure you have Ruby installed to use the build tools, and also the rake and hpricot gems (sudo gem install rake hpricot).
+
+Ext MVC will automatically build (concatenate and minify) your javascript and CSS files.  Just run the following command from the base directory:
+
+ruby script/build all
+
+This will inspect the javascript and css include tags inside index.html and compress them into a single JS file and a single CSS file.  It will minify
+the javascript if the YUI Compressor is installed in vendor/yui-compressor and create the following files:
+
+* public/application-all.js
+* public/application-all-min.js
+* public/stylesheets/application-all.css
+
+== Generators:
+
+Ext MVC comes with some built-in generators to automate some aspects of application development.  Run the generators
+described below from within the main directory of your Ext MVC application.
+
+Be sure that you have updated your config/settings.yml file before running these, otherwise everything will be namespaced
+to 'MyApp' (see above).
+
+=== Model
+
+ruby script/generate model User first_name:string last_name:string balance:int is_admin:boolean
+
+Will generate the following files:
+
+in app/models/User.js:
+/**
+ * @class MyApp.models.MyModel
+ * @extends ExtMVC.Model
+ */
+ExtMVC.Model.define("MyApp.models.User", {
+  modelName: 'user',
+  fields:    [
+    {name: 'first_name', type: 'string'},
+    {name: 'last_name',  type: 'string'},
+    {name: 'balance',    type: 'int'},
+    {name: 'is_admin',   type: 'boolean'}
+  ]
+});
+
+in spec/models/User.spec.js:
+Screw.Unit(function() {
+  describe("The User class", function() {
+    var user;
+    before(function() {
+      user = new MyApp.models.User({
+        //set fields for this model here
+      });
+    });
+    
+    //create your unit tests here
+  });
+});
+
+It will also add the following line to your index.html file:
+
+<script type="text/javascript" src="app/models/User.js"></script>
+
+And the following to your spec/index.html file:
+
+<script type="text/javascript" src="../app/models/User.js"></script>
+<script type="text/javascript" src="models/User.spec.js"></script>
+
+
+== Deployment
+
+Once you've built your app, upload only the 'public' folder to your web server.  Nothing else is required to run the app.
+
+== Directory Structure:
+
+* app             - a directory to contain your models, views and controllers
+* app/controllers - contains all of your controllers
+* app/models      - contains all modesl
+* app/views       - contains all view files, usually in subdirectories (e.g. app/views/users/Index.js)
+* config          - contains application configuration files (see below)
+* lib             - contains any library files which are not suited to being plugins
+* public          - the directory you will set as document root on your web server.  Place any public-facing assets in here.  Note that all javascript and stylesheet files will be concatenated automatically into here when you deploy, so these can exist outside of this folder.  Images and other assets will need to be placed here though.
+* script          - contains scripts to automate site build and minification
+* spec            - a directory to place your unit tests or specs
+* vendor          - holds any third-party code
+* vendor/ext      - contains the required version of ExtJS.  ExtJS 2.2 comes pre-installed here, with the Ext adapter.
+* vendor/mvc      - contains the required version of Ext MVC.  Most recent stable version installed by default.  Obtain latest version from http://github.com/extmvc/extmvc/tree
+* vendor/plugins  - contains any MVC-compatible plugins (such as viewport builders, model extensions etc)
+
+== Important Files:
+
+* config/routes.js     - set up any Ext.History related routing required (see file for help)
+* config/initialize.js - any app-wide config code, such as setting up location of s.gif, booting your app, etc
+* config/database.js   - define which data adapter your app uses (RESTful adapter, Gears adapter, your own concoction etc)
+
+* index.html           - Development version of the site, including one file at a time and using ext-all-debug
+* public/index.html    - Production version of the site referencing concatenated and minified files

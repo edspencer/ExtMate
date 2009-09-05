@@ -1,0 +1,3 @@
+# General settings used by ruby scripts
+environment:
+  namespace: MyApp

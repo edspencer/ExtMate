@@ -1,0 +1,40 @@
+/**
+ * This is the main environment file, which defines the files the comprise your application, and other settings.
+ * To add new files to your application, simply add them to the object in the appropriate place (see the inline comments for details)
+ */
+{
+  /**
+   * All stylesheets to be loaded. These are all taken to be relative to the public/stylesheets directory, and the .css is
+   * automatically appended
+   */
+  "stylesheets": [
+    
+  ],
+  
+  //Overrides to include. These files should be located in the config/overrides directory
+  "overrides": [
+    
+  ],
+  
+  //Plugins to include. Each will load vendor/plugins/SomePlugin/SomePlugin-all.js
+  "plugins": [
+    
+  ],
+  
+  //All of the models in this application, found in the app/models folder
+  "models": [
+    
+  ],
+  
+  //All of the controllers in this application, found in the app/controllers folder
+  "controllers" : [
+    "Application", "Index"
+  ],
+  
+  //All of the views in this application, as an object with the subfolder inside app/views as the key, and an array of filenames as the value.
+  //e.g.: views: {"index": ["Index", "MyView"]} will load /app/views/index/Index.js and app/views/index/MyView.js
+  "views": [
+    {"layout": ["Menu"]},
+    {"index" : ["Index"]}
+  ]
+}
