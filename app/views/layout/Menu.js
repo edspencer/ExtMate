@@ -8,7 +8,7 @@ ExtMVC.registerView('layout', 'menu', {
     Ext.applyIf(config, {
       cls: 'file-menu',
       root: {
-        text    : 'Project',
+        text    : 'extmate',
         id      : 'menu',
         nodeType: 'async',
         expanded: true,
@@ -79,7 +79,8 @@ ExtMVC.registerView('layout', 'menu', {
           }
         ]
       },
-      bbar: this.buildBottomToolbar()
+      bbar: this.buildBottomToolbar(),
+      autoScroll: true
     });
     
     Ext.tree.TreePanel.prototype.constructor.call(this, config);

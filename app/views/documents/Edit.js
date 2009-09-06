@@ -67,7 +67,6 @@ ExtMVC.registerView('documents', 'edit', {
       })
     });
     
-    
     return new Ext.Toolbar({
       items: [
         this.lineNumber,

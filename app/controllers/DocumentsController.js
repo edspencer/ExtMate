@@ -9,7 +9,7 @@ ExtMVC.registerController("documents", {
     var splits = id.split("-");
     
     this.render("edit", {
-      title: " * " + splits[splits.length - 1]
+      title: splits[splits.length - 1]
     });
   }
 });
