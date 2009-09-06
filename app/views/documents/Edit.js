@@ -50,10 +50,20 @@ ExtMVC.registerView('documents', 'edit', {
       
       store: new Ext.data.JsonStore({
         fields : ['name', 'id'],
-        data   : [{
-          name : 'JavaScript',
-          id   : 'js'
-        }]
+        data   : [
+          {
+            name : 'JavaScript',
+            id   : 'js'
+          },
+          {
+            name : 'HTML',
+            id   : 'html'
+          },
+          {
+            name : 'CSS',
+            id   : 'css'
+          }
+        ]
       })
     });
     

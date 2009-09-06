@@ -23,5 +23,16 @@ button.search        { background-image: url('../images/icons/find.png');}
 button.expand-all    { background-image: url('../images/icons/application_view_list.png');}
 button.loading       { background-image: url('../images/default/grid/loading.gif');}
 
+button.file          { background-image: url('../images/icons/page_white.png');}
 button.new-file      { background-image: url('../images/icons/page_add.png');}
 button.new-directory { background-image: url('../images/icons/folder_add.png');}
+
+.find          { background-image: url('../images/icons/find.png');}
+.file          { background-image: url('../images/icons/page.png');}
+.new-file      { background-image: url('../images/icons/page_add.png');}
+.save-file     { background-image: url('../images/icons/page_save.png');}
+.new-directory { background-image: url('../images/icons/folder_add.png');}
+
+.file-menu .x-tree-node-leaf .x-tree-node-icon {
+  background-image: url('../images/icons/page.png');
+}

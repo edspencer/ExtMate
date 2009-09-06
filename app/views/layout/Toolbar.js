@@ -6,7 +6,8 @@ ExtMVC.registerView('layout', 'toolbar', {
           
     Ext.applyIf(config, {
       items: [
-        this.buildFileMenu()
+        this.buildFileMenu(),
+        this.buildEditMenu()
       ]
     });
     
@@ -20,15 +21,47 @@ ExtMVC.registerView('layout', 'toolbar', {
         items: [
           {
             text   : "New File",
+            iconCls: 'new-file',
             scope  : this,
-            handler: this.onNewFile
+            handler: ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build'])
+          },
+          {
+            text   : "Open Recent",
+            menu   : {
+              items: [
+                {iconCls: 'file', text: 'ApplicationController.js'},
+                {iconCls: 'file', text: 'Document.js'}
+              ]
+            }
+          },
+          {
+            text   : "Save",
+            scope  : this,
+            iconCls: 'save-file',
+            handler: function() {
+              console.log('save');
+            }
           }
         ]
       }
     };
   },
   
-  onNewFile: function() {
-    
+  buildEditMenu: function() {
+    return {
+      text: "Edit",
+      menu: {
+        items: [
+          {
+            text   : "Find",
+            scope  : this,
+            iconCls: 'find',
+            handler: function() {
+              console.log('find');
+            }
+          }
+        ]
+      }
+    };
   }
 });

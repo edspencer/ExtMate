@@ -19,12 +19,12 @@ ExtMVC.App.define({
       split    : true,
       listeners: {
         scope: this,
-        click: function(node) {
-          var attrs = node.attributes;
-          
-          if (attrs.controller != undefined) {
-            ExtMVC.dispatch({controller: attrs.controller, action: attrs.action});
-          }          
+        click: function(node) {          
+          if (!node.hasChildNodes()) {
+            var attrs = node.attributes;
+            
+            ExtMVC.dispatch('documents', 'edit', [attrs.id]);
+          }
         }
       }
     });
@@ -39,12 +39,7 @@ ExtMVC.App.define({
       plain : true,
       cls   : 'mainPanel',
       
-      enableTabScroll: true,
-      listeners : {
-        tabchange: function(tabPanel, tab){
-          // Ext.History.add(tab.url);
-        }
-      }
+      enableTabScroll: true
     });
     
     this.viewport = new Ext.Viewport({
@@ -144,6 +139,14 @@ ExtMVC.registerController("documents", {
   
   build: function() {
     this.render('new');
+  },
+  
+  edit: function(id) {
+    var splits = id.split("-");
+    
+    this.render("edit", {
+      title: " * " + splits[splits.length - 1]
+    });
   }
 });
 
@@ -155,6 +158,7 @@ ExtMVC.registerView('layout', 'menu', {
     config = config || {};
           
     Ext.applyIf(config, {
+      cls: 'file-menu',
       root: {
         text    : 'Project',
         id      : 'menu',
@@ -167,19 +171,20 @@ ExtMVC.registerView('layout', 'menu', {
             children: [
               {
                 text: 'App.js',
-                leaf: true
+                leaf: true,
+                id  : 'app-App.js'
               },
               {
                 text: 'controllers',
                 children: [
-                  {text: 'ApplicationController.js', leaf: true},
-                  {text: 'IndexController.js', leaf: true}
+                  {text: 'ApplicationController.js', leaf: true, id: 'app-controllers-ApplicationController.js'},
+                  {text: 'IndexController.js',       leaf: true, id: 'app-controllers-IndexController.js'}
                 ]
               },
               {
                 text: 'models',
                 children: [
-                  
+                  {text: "Document.js", leaf: true, id: 'app-models-Document.js'}
                 ]
               },
               {
@@ -191,7 +196,10 @@ ExtMVC.registerView('layout', 'menu', {
                   },
                   {
                     text: 'layout',
-                    children: [{text: 'Menu.js', leaf: true}]
+                    children: [
+                      {text: 'Menu.js', leaf: true},
+                      {text: 'Toolbar.js', leaf: true}
+                    ]
                   }
                 ]
               }
@@ -243,7 +251,7 @@ ExtMVC.registerView('layout', 'menu', {
       text    : '',
       iconCls : 'new-file',
       scope   : this,
-      handler : this.onNewFile,
+      handler : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build']),
       tooltip : "Create a new file"
     });
     
@@ -267,14 +275,6 @@ ExtMVC.registerView('layout', 'menu', {
         this.newDirectoryButton
       ]
     });
-  },
-  
-  onNewFile: function() {
-    
-  },
-  
-  onNewDirectory: function() {
-    
   }
 });
 
@@ -286,7 +286,8 @@ ExtMVC.registerView('layout', 'toolbar', {
           
     Ext.applyIf(config, {
       items: [
-        this.buildFileMenu()
+        this.buildFileMenu(),
+        this.buildEditMenu()
       ]
     });
     
@@ -300,16 +301,48 @@ ExtMVC.registerView('layout', 'toolbar', {
         items: [
           {
             text   : "New File",
+            iconCls: 'new-file',
             scope  : this,
-            handler: this.onNewFile
+            handler: ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build'])
+          },
+          {
+            text   : "Open Recent",
+            menu   : {
+              items: [
+                {iconCls: 'file', text: 'ApplicationController.js'},
+                {iconCls: 'file', text: 'Document.js'}
+              ]
+            }
+          },
+          {
+            text   : "Save",
+            scope  : this,
+            iconCls: 'save-file',
+            handler: function() {
+              console.log('save');
+            }
           }
         ]
       }
     };
   },
   
-  onNewFile: function() {
-    
+  buildEditMenu: function() {
+    return {
+      text: "Edit",
+      menu: {
+        items: [
+          {
+            text   : "Find",
+            scope  : this,
+            iconCls: 'find',
+            handler: function() {
+              console.log('find');
+            }
+          }
+        ]
+      }
+    };
   }
 });
 
@@ -383,10 +416,20 @@ ExtMVC.registerView('documents', 'edit', {
       
       store: new Ext.data.JsonStore({
         fields : ['name', 'id'],
-        data   : [{
-          name : 'JavaScript',
-          id   : 'js'
-        }]
+        data   : [
+          {
+            name : 'JavaScript',
+            id   : 'js'
+          },
+          {
+            name : 'HTML',
+            id   : 'html'
+          },
+          {
+            name : 'CSS',
+            id   : 'css'
+          }
+        ]
       })
     });
     

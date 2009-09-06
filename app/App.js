@@ -19,12 +19,12 @@ ExtMVC.App.define({
       split    : true,
       listeners: {
         scope: this,
-        click: function(node) {
-          var attrs = node.attributes;
-          
-          if (attrs.controller != undefined) {
-            ExtMVC.dispatch({controller: attrs.controller, action: attrs.action});
-          }          
+        click: function(node) {          
+          if (!node.hasChildNodes()) {
+            var attrs = node.attributes;
+            
+            ExtMVC.dispatch('documents', 'edit', [attrs.id]);
+          }
         }
       }
     });
@@ -39,12 +39,7 @@ ExtMVC.App.define({
       plain : true,
       cls   : 'mainPanel',
       
-      enableTabScroll: true,
-      listeners : {
-        tabchange: function(tabPanel, tab){
-          // Ext.History.add(tab.url);
-        }
-      }
+      enableTabScroll: true
     });
     
     this.viewport = new Ext.Viewport({

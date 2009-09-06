@@ -6,6 +6,7 @@ ExtMVC.registerView('layout', 'menu', {
     config = config || {};
           
     Ext.applyIf(config, {
+      cls: 'file-menu',
       root: {
         text    : 'Project',
         id      : 'menu',
@@ -18,19 +19,20 @@ ExtMVC.registerView('layout', 'menu', {
             children: [
               {
                 text: 'App.js',
-                leaf: true
+                leaf: true,
+                id  : 'app-App.js'
               },
               {
                 text: 'controllers',
                 children: [
-                  {text: 'ApplicationController.js', leaf: true},
-                  {text: 'IndexController.js', leaf: true}
+                  {text: 'ApplicationController.js', leaf: true, id: 'app-controllers-ApplicationController.js'},
+                  {text: 'IndexController.js',       leaf: true, id: 'app-controllers-IndexController.js'}
                 ]
               },
               {
                 text: 'models',
                 children: [
-                  
+                  {text: "Document.js", leaf: true, id: 'app-models-Document.js'}
                 ]
               },
               {
@@ -42,7 +44,10 @@ ExtMVC.registerView('layout', 'menu', {
                   },
                   {
                     text: 'layout',
-                    children: [{text: 'Menu.js', leaf: true}]
+                    children: [
+                      {text: 'Menu.js', leaf: true},
+                      {text: 'Toolbar.js', leaf: true}
+                    ]
                   }
                 ]
               }
@@ -94,7 +99,7 @@ ExtMVC.registerView('layout', 'menu', {
       text    : '',
       iconCls : 'new-file',
       scope   : this,
-      handler : this.onNewFile,
+      handler : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build']),
       tooltip : "Create a new file"
     });
     
@@ -118,13 +123,5 @@ ExtMVC.registerView('layout', 'menu', {
         this.newDirectoryButton
       ]
     });
-  },
-  
-  onNewFile: function() {
-    
-  },
-  
-  onNewDirectory: function() {
-    
   }
 });
