@@ -5,6 +5,11 @@
  */
 ExtMVC.registerController("index", {
   index: function() {
-    this.render('index');
+    //open up a couple of dummy files
+    Ext.each(['IndexController.js', 'ExtMate.css'], function(file) {
+      this.render('documents', 'edit', {
+        title: file
+      });
+    }, this);
   }
 });

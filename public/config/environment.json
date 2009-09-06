@@ -8,7 +8,7 @@
    * automatically appended
    */
   "stylesheets": [
-    
+    "extmate"
   ],
   
   //Overrides to include. These files should be located in the config/overrides directory
@@ -28,13 +28,14 @@
   
   //All of the controllers in this application, found in the app/controllers folder
   "controllers" : [
-    "Application", "Index"
+    "Application", "Index", "Documents"
   ],
   
   //All of the views in this application, as an object with the subfolder inside app/views as the key, and an array of filenames as the value.
   //e.g.: views: {"index": ["Index", "MyView"]} will load /app/views/index/Index.js and app/views/index/MyView.js
   "views": [
-    {"layout": ["Menu"]},
-    {"index" : ["Index"]}
+    {"layout"   : ["Menu", "Toolbar"]},
+    {"index"    : ["Index"]},
+    {"documents": ["Edit", "New"]}
   ]
 }

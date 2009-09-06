@@ -1,0 +1,28 @@
+body {
+  font-family: tahoma;
+  font-size: 75%;
+}
+
+/* Button images */
+button.save          { background-image: url('../images/icons/tick.png');}
+button.cancel        { background-image: url('../images/icons/cancel.png');}
+                     
+button.add           { background-image: url('../images/icons/add.png');}
+button.new           { background-image: url('../images/icons/add.png');}
+button.edit          { background-image: url('../images/icons/edit.png');}
+button.delete        { background-image: url('../images/icons/delete.png');}
+button.close         { background-image: url('../images/icons/book_go.png');}
+button.unlink_br     { background-image: url('../images/icons/book_delete.png');}
+button.send          { background-image: url('../images/icons/arrow_refresh.png');}
+button.print         { background-image: url('../images/icons/page.png');}
+button.receive       { background-image: url('../images/icons/door_in.png');}
+button.unreceive     { background-image: url('../images/icons/door_out.png');}
+button.refresh       { background-image: url('../images/icons/arrow_refresh.png');}
+button.list          { background-image: url('../images/icons/category.png');}
+button.search        { background-image: url('../images/icons/find.png');}
+button.expand-all    { background-image: url('../images/icons/application_view_list.png');}
+button.loading       { background-image: url('../images/default/grid/loading.gif');}
+
+button.new-file      { background-image: url('../images/icons/page_add.png');}
+button.new-directory { background-image: url('../images/icons/folder_add.png');}
+

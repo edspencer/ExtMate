@@ -52,8 +52,7 @@ ExtMVC.registerView('extmvc', 'formwindow', {
           handler: this.onCancel
         }
       ],
-      layout: 'fit',
-      closeAction: 'hide'
+      layout: 'fit'
     });
     
     Ext.Window.prototype.initComponent.apply(this, arguments);

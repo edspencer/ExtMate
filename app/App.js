@@ -11,10 +11,12 @@ ExtMVC.App.define({
    */
   launch: function() {
     Ext.QuickTips.init();
+    this.initializeKeyMap();
     
     this.menu = ExtMVC.buildView('layout', 'menu', {
       region   : 'west',
-      width    : 240,
+      width    : 215,
+      split    : true,
       listeners: {
         scope: this,
         click: function(node) {
@@ -46,15 +48,38 @@ ExtMVC.App.define({
     });
     
     this.viewport = new Ext.Viewport({
-      layout: 'border',
-      items:  [this.menu, this.main]
+      layout: 'fit',
+      items : [
+        {
+          layout: 'border',
+          items :  [this.menu, this.main],
+          tbar  : ExtMVC.buildView('layout', 'toolbar')
+        }
+      ]
     });
+    
     
     this.fireEvent('launched');
     
     ExtMVC.dispatch('index', 'index');
     
     Ext.get('loading').remove();  
-    Ext.get('loading-mask').fadeOut({remove:true});  
+    Ext.get('loading-mask').fadeOut({remove:true});
+  },
+  
+  initializeKeyMap: function(panel) {
+    /**
+     * @property keymap
+     * @type Ext.KeyMap
+     * The global KeyMap object
+     */
+    this.keymap = new Ext.KeyMap(document, [
+      {
+        key : 'n',
+        ctrl: true,
+        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build']),
+        stopEvent: true
+      }
+    ]);
   }
 });
