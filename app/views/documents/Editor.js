@@ -69,14 +69,51 @@ ExtMVC.registerView('documents', 'editor', {
        * @type Number
        * The number of the first line visible at the top of the canvas
        */
-      firstLineNumber: 1
+      firstLineNumber: 1,
+      
+      /**
+       * @property cursorWidth
+       * @type Number
+       * The width in pixels to draw each cursor (defaults to 1)
+       */
+      cursorWidth: 1,
+      
+      /**
+       * @property cursorColor
+       * @type String
+       * Hex color code for the cursor (defaults to '#000000')
+       */
+      cursorColor: "#000000"
     });
     
     Ext.Panel.prototype.constructor.call(this, config);
     
+    /**
+     * @property cursors
+     * @type Array
+     * Array containing all of the cursors for this canvas. There is always at least 1 cursor
+     */
+    this.cursors = [];
+    this.addDefaultCursor();
+    
     this.on('render', this.initCanvas, this);
   },
   
+  /**
+   * Adds a default cursor to the cursors array
+   */
+  addDefaultCursor: function() {
+    var cursor = ExtMVC.buildModel("Cursor", {
+      line  : 1,
+      column: 1
+    });
+    
+    this.cursors.push(cursor);
+  },
+  
+  /**
+   * Called on render - initializes references to the canvas and listens to events the canvas element fires
+   */
   initCanvas: function() {
     var el  = this.el,
         dom = el.dom;
@@ -126,6 +163,8 @@ ExtMVC.registerView('documents', 'editor', {
    * Draws the currently visibly section of the document
    */
   draw: function() {
+    this.clear();
+    
     var instance    = this.instance,
         body        = instance.get('body'),
         rawLines    = body.split("\n"),
@@ -146,6 +185,7 @@ ExtMVC.registerView('documents', 'editor', {
     
     this.drawGutter();
     this.drawLines(lines);
+    this.drawCursors();
   },
   
   /**
@@ -181,6 +221,7 @@ ExtMVC.registerView('documents', 'editor', {
    */
   drawLines: function(lines) {
     var c = this.getContext();
+    c.save();
     
     for (var i=0; i < lines.length; i++) {
       var line = lines[i];
@@ -195,6 +236,36 @@ ExtMVC.registerView('documents', 'editor', {
       //draw line
       c.fillText(line.text, this.getLineStartX(), 0);
     };
+    
+    c.restore();
+  },
+  
+  /**
+   * Draws each cursor in the cursors array
+   */
+  drawCursors: function() {
+    var c = this.getContext();
+    
+    Ext.each(this.cursors, function(cursor) {
+      c.save();
+      c.fillStyle = this.cursorColor;
+      
+      c.translate(
+        this.xForColumnNumber(cursor.get('column')),
+        this.yForLineNumber(cursor.get('line')) + 3
+      );
+      
+      c.fillRect(0, 0, -this.cursorWidth, -this.lineHeight);
+      
+      c.restore();
+    }, this);
+  },
+  
+  /**
+   * Clears the canvas
+   */
+  clear: function() {
+    this.getContext().clearRect(0, 0, this.el.getWidth(), this.el.getHeight());
   },
   
   /**
@@ -212,7 +283,10 @@ ExtMVC.registerView('documents', 'editor', {
     
     var coords = this.cursorPositionForCoords(x, y);
     
-    console.log(coords);
+    var cursor = this.cursors[0];
+    cursor.set('line', coords.line);
+    cursor.set('column', coords.column);
+    this.draw();
   },
   
   /**
@@ -228,15 +302,58 @@ ExtMVC.registerView('documents', 'editor', {
       //user has clicked in the gutter
       
     } else {
-      var columnWidth = this.fontSize * 0.625,
-          pageX       = x - xOffset,
-          pageY       = y;
+      var pageX = x - xOffset,
+          pageY = y;
       
       return {
-        line  : Math.round(pageY / this.lineHeight + (this.firstLineNumber - 1)),
-        column: Math.round(pageX / columnWidth + 1)
+        line  : this.lineForY(pageY),
+        column: this.columnForX(pageX)
       };
     }
+  },
+  
+  /**
+   * Returns the y co-ordinate for a given line number
+   * @param {Number} line The line number
+   * @return {Number} The y co-ordinate
+   */
+  yForLineNumber: function(line) {
+    return Math.floor((line - (this.firstLineNumber - 1)) * this.lineHeight);
+  },
+  
+  /**
+   * Returns the x co-ordinate for a given column number
+   * @param {Number} column The column number
+   * @return {Number} The x co-ordinate
+   */
+  xForColumnNumber: function(column) {
+    return Math.floor(this.getLineStartX() + (this.getColumnWidth() * (column - 1)));
+  },
+  
+  /**
+   * Returns the line number for a given y co-ordinate
+   * @param {Number} y The y co-ordinate
+   * @return {Number} The line number
+   */
+  lineForY: function(y) {
+    return Math.round(y / this.lineHeight + (this.firstLineNumber - 1));
+  },
+  
+  /**
+   * Returns the column number for a given x co-ordinate
+   * @param {Number} x The x co-ordinate
+   * @return {Number} The column number
+   */
+  columnForX: function(x) {
+    return Math.round(x / this.getColumnWidth() + 1);
+  },
+  
+  /**
+   * Returns the width in pixels of each column
+   * @return {Number} The width in pixels of each column
+   */
+  getColumnWidth: function() {
+    return this.fontSize * 0.72;
   },
   
   /**
