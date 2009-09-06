@@ -6,7 +6,7 @@
 ExtMVC.registerController("index", {
   index: function() {
     //open up a couple of dummy files
-    Ext.each(['IndexController.js', 'ExtMate.css'], function(file) {
+    Ext.each(['IndexController.js'], function(file) {
       this.render('documents', 'edit', {
         title: file
       });

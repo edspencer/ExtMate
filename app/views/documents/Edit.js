@@ -3,15 +3,54 @@ ExtMVC.registerView('documents', 'edit', {
   registerXType: 'document',
   title        : "New Document",
   closable     : true,
+  autoScroll   : true,
   
   constructor: function(config) {
     config = config || {};
+    
+    /**
+     * @property editor
+     * @type Ext.Panel
+     * The canvas editor bound to this panel
+     */
+    this.editor =  ExtMVC.buildView("documents", "editor", {
+      
+    });
           
     Ext.applyIf(config, {
-      bbar: this.buildBottomToolbar()
+      bbar  : this.buildBottomToolbar(),
+      layout: 'fit',
+      items : [
+        this.editor
+      ]
     });
     
     Ext.Panel.prototype.constructor.call(this, config);
+    
+    this.on('render', this.loadFakeRecord, this);
+  },
+  
+  /**
+   * Loads a document into this panel
+   * @param {ExtMate.models.Document} instance The document to load
+   */
+  loadRecord: function(instance) {
+    /**
+     * @property instance
+     * @type ExtMate.models.Document
+     * The currently loaded document
+     */
+    this.instance = instance;
+    
+    this.editor.bind(instance);
+  },
+  
+  loadFakeRecord: function() {
+    var doc = ExtMVC.buildModel("Document", {
+      body: "hmm\n  This is a test\nrah!"
+    });
+    
+    this.loadRecord(doc);
   },
   
   buildBottomToolbar: function() {

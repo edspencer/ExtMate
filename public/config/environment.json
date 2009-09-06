@@ -36,6 +36,6 @@
   "views": [
     {"layout"   : ["Menu", "Toolbar"]},
     {"index"    : ["Index"]},
-    {"documents": ["Edit", "New"]}
+    {"documents": ["Edit", "Editor", "New"]}
   ]
 }
