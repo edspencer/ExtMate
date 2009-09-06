@@ -1,21 +1,25 @@
 ExtMVC.registerView('documents', 'new', {
   xtype : 'formwindow',
   title : 'New File',
-  width : 200,
-  height: 120,
+  width : 300,
+  height: 110,
   layout: 'fit',
   id    : 'new_file',
-  constrain: true,
+  
+  closeAction  : 'close',
+  defaultButton: 'new-file-input',
   
   buildForm: function() {
     return new Ext.form.FormPanel({
-      bodyStyle: 'padding: 5px',
+      labelWidth: 80,
+      bodyStyle : 'padding: 5px',
       items: [
         {
           fieldLabel: "Filename",
           xtype     : 'textfield',
           name      : 'filename',
-          anchor    : "-20"
+          anchor    : "-20",
+          id        : "new-file-input"
         }
       ]
     });

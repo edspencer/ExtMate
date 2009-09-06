@@ -107,6 +107,17 @@ ExtMVC.router.Router.defineRoutes = function(map) {
   map.root({controller: 'index', action: 'index'});
 };
 
+ExtMVC.registerModel("Document", {
+  fields: [
+    {name: 'id',   type: 'int'},
+    
+    {name: 'name', type: 'string'},
+    {name: 'body', type: 'string'}
+  ]
+});
+
+
+
 /**
  * @class MyApp.controllers.ApplicationController
  * @extends ExtMVC.controller.CrudController
@@ -145,7 +156,7 @@ ExtMVC.registerController("documents", {
     var splits = id.split("-");
     
     this.render("edit", {
-      title: " * " + splits[splits.length - 1]
+      title: splits[splits.length - 1]
     });
   }
 });
@@ -160,7 +171,7 @@ ExtMVC.registerView('layout', 'menu', {
     Ext.applyIf(config, {
       cls: 'file-menu',
       root: {
-        text    : 'Project',
+        text    : 'extmate',
         id      : 'menu',
         nodeType: 'async',
         expanded: true,
@@ -231,7 +242,8 @@ ExtMVC.registerView('layout', 'menu', {
           }
         ]
       },
-      bbar: this.buildBottomToolbar()
+      bbar: this.buildBottomToolbar(),
+      autoScroll: true
     });
     
     Ext.tree.TreePanel.prototype.constructor.call(this, config);
@@ -433,7 +445,6 @@ ExtMVC.registerView('documents', 'edit', {
       })
     });
     
-    
     return new Ext.Toolbar({
       items: [
         this.lineNumber,
@@ -449,21 +460,25 @@ ExtMVC.registerView('documents', 'edit', {
 ExtMVC.registerView('documents', 'new', {
   xtype : 'formwindow',
   title : 'New File',
-  width : 200,
-  height: 120,
+  width : 300,
+  height: 110,
   layout: 'fit',
   id    : 'new_file',
-  constrain: true,
+  
+  closeAction  : 'close',
+  defaultButton: 'new-file-input',
   
   buildForm: function() {
     return new Ext.form.FormPanel({
-      bodyStyle: 'padding: 5px',
+      labelWidth: 80,
+      bodyStyle : 'padding: 5px',
       items: [
         {
           fieldLabel: "Filename",
           xtype     : 'textfield',
           name      : 'filename',
-          anchor    : "-20"
+          anchor    : "-20",
+          id        : "new-file-input"
         }
       ]
     });
