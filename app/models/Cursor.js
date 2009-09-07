@@ -22,7 +22,7 @@ ExtMVC.registerModel("Cursor", {
   moveTo: function(line, column) {
     //constrain to top lef
     line   = Math.max(line, 1);
-    column = Math.max(column, 1);
+    column = Math.max(column || this.get('column'), 1);
     
     //constrain to document
     if (this.doc != undefined) {
@@ -94,11 +94,25 @@ ExtMVC.registerModel("Cursor", {
   },
   
   moveLeft: function() {
-    this.move('column', -1);
+    if (this.get('column') == 1) {
+      var lineNum    = this.get('line') - 1,
+          lineLength = this.doc.getLine(lineNum).length;
+          
+      this.moveTo(lineNum, lineLength + 1);
+    } else {
+      this.move('column', -1);
+    }
   },
   
   moveRight: function() {
-    this.move('column', 1);
+    var lineNum    = this.get('line'),
+        lineLength = this.doc.getLine(lineNum).length;
+        
+    if (this.get('column') == lineLength + 1) {
+      this.moveTo(this.get('line') + 1, 1);
+    } else {
+      this.move('column', 1);
+    }
   },
   
   moveUp: function() {

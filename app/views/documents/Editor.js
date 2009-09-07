@@ -410,6 +410,7 @@ ExtMVC.registerView('documents', 'editor', {
         actionTaken = true;
         break;
       case e.DELETE:
+        console.log('delete');
         this.eachCursor(function(cursor) {
           this.instance.remove(cursor.get('line'), cursor.get('column') + 1);
         });

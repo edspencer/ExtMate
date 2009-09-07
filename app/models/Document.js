@@ -7,13 +7,6 @@ ExtMVC.registerModel("Document", {
   ],
   
   /**
-   * @property whitespaceMatcher
-   * @type RegExp
-   * The regex used to find whitespace and similar characters
-   */
-  whitespaceMatcher: /\s/,
-  
-  /**
    * Returns the lime + column numbers of the next whitespace after the given location
    * @param {Number} lineNumber The line number
    * @param {Number} columnNumber The column number
@@ -81,11 +74,17 @@ ExtMVC.registerModel("Document", {
   remove: function(lineNumber, column, num) {
     num = num || 1;
     
-    var line = this.getLine(lineNumber),
-        pre  = line.substr(0, column - (1 + num)),
-        post = line.substr(column - 1);
+    var line = this.getLine(lineNumber);
     
-    this.setLine(lineNumber, pre + post);
+    if (line.length == 0) {
+      this.removeLine(lineNumber);
+    } else {
+      var pre     = line.substr(0, column - (1 + num)),
+          post    = line.substr(column - 1),
+          updated = pre + post;
+          
+      this.setLine(lineNumber, updated);
+    }
   },
   
   /**
@@ -111,6 +110,19 @@ ExtMVC.registerModel("Document", {
         lines = body.split("\n");
         
     return lines[num - 1];
+  },
+  
+  /**
+   * Removes the given line by number
+   * @param {Number} lineNumber The line to remove
+   */
+  removeLine: function(lineNumber) {
+    var lines = this.get('body').split("\n");
+    
+    var newLines = lines.slice(0, lineNumber - 1);
+    newLines = newLines.concat(lines.slice(lineNumber));
+    
+    this.set('body', newLines.join("\n"));
   },
   
   /**
