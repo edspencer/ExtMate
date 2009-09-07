@@ -361,10 +361,37 @@ ExtMVC.registerView('documents', 'editor', {
     
     var coords = this.cursorPositionForCoords(x, y);
     
-    var cursor = this.cursors[0];
-    cursor.set('line', coords.line);
-    cursor.set('column', coords.column);
+    if (e.ctrlKey) {
+      var cursor = ExtMVC.buildModel("Cursor", {
+        line: coords.line,
+        column: coords.column
+      });
+      
+      this.addCursor(cursor);
+    } else {
+      this.removeCursors();
+      
+      var cursor = this.cursors[0];
+      cursor.set('line', coords.line);
+      cursor.set('column', coords.column);
+    }
+
     this.draw();
+  },
+  
+  /**
+   * Adds a cursor to the collection
+   * @param {ExtMate.models.Cursor} cursor The cursor to add
+   */
+  addCursor: function(cursor) {
+    this.cursors.push(cursor);
+  },
+  
+  /**
+   * Removes all but the default cursor
+   */
+  removeCursors: function() {
+    this.cursors = [this.cursors[0]];
   },
   
   /**
