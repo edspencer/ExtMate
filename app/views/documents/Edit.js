@@ -47,7 +47,7 @@ ExtMVC.registerView('documents', 'edit', {
   
   loadFakeRecord: function() {
     var doc = ExtMVC.buildModel("Document", {
-      body: "hmm\n  This is a test\nabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxy"
+      body: "abcde\n  This is a test\nabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxy"
     });
     
     this.loadRecord(doc);

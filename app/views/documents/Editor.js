@@ -132,12 +132,10 @@ ExtMVC.registerView('documents', 'editor', {
     
     el.on({
       scope: this,
-      click: this.onClick,
-      keypress: function(e) {
-        console.log('key');
-        console.log(arguments);
-      }
+      click: this.onClick
     });
+    
+    Ext.get(document).on('keypress', this.onKeyPress, this);
   },
   
   /**
@@ -269,10 +267,90 @@ ExtMVC.registerView('documents', 'editor', {
   },
   
   /**
+   * Attached to keypress event - updates document at each cursor
+   * @param {Ext.EventObject} e the Event object
+   */
+  onKeyPress: function(e) {
+    e.stopEvent();
+    
+    switch (e.getKey()) {
+      case e.ENTER:
+        this.insertAtEachCursor("\n", false);
+        this.eachCursor('moveDown');
+        break;
+      case e.ESC:
+      
+      
+        break;
+      case e.BACKSPACE:
+        this.eachCursor(function(cursor) {
+          this.instance.remove(cursor.get('line'), cursor.get('column'));
+          cursor.moveLeft();
+        });
+        
+        break;
+    }
+    
+    if (e.isNavKeyPress()) {
+      this.eachCursor(function(cursor) {
+        switch(e.getKey()) {
+          case 37: cursor.moveLeft();  break;
+          case 38: cursor.moveUp();    break;
+          case 39: cursor.moveRight(); break;
+          case 40: cursor.moveDown();  break;
+        }
+      });
+    } else if (e.isSpecialKey()) {
+      console.log('special');
+      console.log(e);
+      console.log(e.getKey());
+    } else {
+      var letter = String.fromCharCode(e.getKey());
+      this.insertAtEachCursor(letter);
+    }
+    
+    this.draw();
+  },
+  
+  /**
+   * Calls the given function with each cursor
+   * @param {Function} fn The function to call
+   * @param {Object} scope Optional scope
+   */
+  eachCursor: function(fn, scope) {
+    scope = scope || this;
+    
+    if (Ext.isString(fn)) {
+      Ext.each(this.cursors, function(cursor) { cursor[fn](); }, scope);
+    } else {
+      Ext.each(this.cursors, fn, scope);
+    }
+  },
+  
+  /**
+   * Inserts a string at each cursor
+   * @param {String} str The string to insert
+   * @param {Boolean} moveRight True to automatically move the cursor 1 to the right (defaults to true)
+   */
+  insertAtEachCursor: function(str, moveRight) {
+    this.eachCursor(function(cursor) {
+      this.instance.insert({
+        line  : cursor.get('line'),
+        column: cursor.get('column'),
+        text  : str
+      });
+
+      if (moveRight !== false) cursor.moveRight();
+    });
+  },
+  
+  /**
    * Attached to the canvas' click event. Normalises click co-ordinates
    * @param {Ext.EventObject} e The event object
    */
   onClick: function(e) {
+    this.el.focus();
+    
     //normalise click XY data to make it relative to the canvas element instead of the page
     var elXY = this.el.getXY(),
         elX  = elXY[0],
@@ -353,7 +431,7 @@ ExtMVC.registerView('documents', 'editor', {
    * @return {Number} The width in pixels of each column
    */
   getColumnWidth: function() {
-    return this.fontSize * 0.72;
+    return this.fontSize * 0.6;
   },
   
   /**
