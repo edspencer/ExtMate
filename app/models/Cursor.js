@@ -34,6 +34,65 @@ ExtMVC.registerModel("Cursor", {
     this.set('column', column);
   },
   
+  /**
+   * Moves the cursor to the next whitespace to the right
+   */
+  moveNextRight: function() {
+    if (this.doc == undefined) return;
+    
+    var location = this.doc.nextWhiteSpace(this.get('line'), this.get('column'));
+    
+    if (location.line && location.column) this.moveTo(location.line, location.column);
+  },
+  
+  /**
+   * Moves the cursor to the next whitespace to the left
+   */
+  moveNextLeft: function() {
+    if (this.doc == undefined) return;
+    
+    var location = this.doc.previousWhiteSpace(this.get('line'), this.get('column'));
+    
+    if (location.line && location.column) this.moveTo(location.line, location.column);
+  },
+  
+  moveNextUp  : function() {},
+  moveNextDown: function() {},
+  
+  /**
+   * Moves the cursor as far to the left as possible
+   */
+  moveFarLeft: function() {
+    this.moveTo(this.get('line'), 1);
+  },
+  
+  /**
+   * Moves the cursor as far to the right as possible
+   */
+  moveFarRight: function() {
+    if (this.doc == undefined) return;
+    
+    var lineLength = this.doc.getLine(this.get('line')).length;
+    
+    this.moveTo(this.get('line'), lineLength + 1);
+  },
+  
+  /**
+   * Moves the cursor as far up as possible
+   */
+  moveFarUp: function() {
+    this.moveTo(1, this.get('column'));
+  },
+  
+  /**
+   * Moves the cursor as far down as possible
+   */
+  moveFarDown: function() {
+    if (this.doc == undefined) return;
+    
+    this.moveTo(this.doc.getLineCount(), this.get('column'));
+  },
+  
   moveLeft: function() {
     this.move('column', -1);
   },

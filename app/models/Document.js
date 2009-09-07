@@ -7,6 +7,52 @@ ExtMVC.registerModel("Document", {
   ],
   
   /**
+   * @property whitespaceMatcher
+   * @type RegExp
+   * The regex used to find whitespace and similar characters
+   */
+  whitespaceMatcher: /\s/,
+  
+  /**
+   * Returns the lime + column numbers of the next whitespace after the given location
+   * @param {Number} lineNumber The line number
+   * @param {Number} columnNumber The column number
+   * @return {Object} Object containing the column/line numbers of the next white space element
+   */
+  nextWhiteSpace: function(lineNumber, columnNumber) {
+    var line = this.getLine(lineNumber),
+        str  = line.substr(columnNumber - 1);
+    
+    var index = str.indexOf(" ");
+    if (index == -1) index = str.length;
+    
+    return {
+      line  : lineNumber,
+      column: columnNumber + index + 1
+    };
+  },
+  
+  /**
+   * Returns the lime + column numbers of the previos whitespace before the given location
+   * @param {Number} lineNumber The line number
+   * @param {Number} columnNumber The column number
+   * @return {Object} Object containing the column/line numbers of the previous white space element
+   */
+  previousWhiteSpace: function(lineNumber, columnNumber) {
+    var line   = this.getLine(lineNumber),
+        str    = line.substr(0, columnNumber),
+        splits = str.split(" ");
+    
+    var index = Ext.sum(Ext.pluck(splits, 'length'));
+    if (index == -1) index = 0;
+    
+    return {
+      line  : lineNumber,
+      column: index
+    };
+  },
+  
+  /**
    * Inserts a string at the given line/column point
    * @param {Object} config An object containing line, column and text
    */

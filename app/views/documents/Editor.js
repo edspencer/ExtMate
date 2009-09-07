@@ -395,14 +395,26 @@ ExtMVC.registerView('documents', 'editor', {
   onKeyPress: function(e) {
     e.stopEvent();
     
+    var actionTaken = false;
+    
     switch (e.getKey()) {
       case e.ENTER:
         this.insertAtEachCursor("\n", false);
         this.eachCursor('moveDown');
+        this.eachCursor("moveFarLeft");
+        
+        actionTaken = true;
         break;
       case e.ESC:
       
-      
+        actionTaken = true;
+        break;
+      case e.DELETE:
+        this.eachCursor(function(cursor) {
+          this.instance.remove(cursor.get('line'), cursor.get('column') + 1);
+        });
+        
+        actionTaken = true;
         break;
       case e.BACKSPACE:
         this.eachCursor(function(cursor) {
@@ -410,27 +422,38 @@ ExtMVC.registerView('documents', 'editor', {
           cursor.moveLeft();
         });
         
+        actionTaken = true;
         break;
     }
     
-    if (e.isNavKeyPress()) {
-      this.eachCursor(function(cursor) {
-        switch(e.getKey()) {
-          case 37: cursor.moveLeft();  break;
-          case 38: cursor.moveUp();    break;
-          case 39: cursor.moveRight(); break;
-          case 40: cursor.moveDown();  break;
-        }
-      });
-      
-      this.fireEvent('cursor-moved', this.cursors[0]);
-    } else if (e.isSpecialKey()) {
-      console.log('special');
-      console.log(e);
-      console.log(e.getKey());
-    } else {
-      var letter = String.fromCharCode(e.getKey());
-      this.insertAtEachCursor(letter);
+    if (!actionTaken) {
+      if (e.isNavKeyPress()) {
+        this.eachCursor(function(cursor) {
+          //map key codes to arrow directions
+          var directions = {
+            37: "Left",
+            38: "Up",
+            39: "Right",
+            40: "Down"
+          };
+          
+          var modifier = '';
+          if (e.ctrlKey) modifier = 'Far';
+          if (e.altKey)  modifier = 'Next';
+          
+          var fnName = String.format("move{0}{1}", modifier, directions[e.getKey()]);
+          cursor[fnName]();
+        });
+
+        this.fireEvent('cursor-moved', this.cursors[0]);
+      } else if (e.isSpecialKey()) {
+        console.log('special');
+        console.log(e);
+        console.log(e.getKey());
+      } else {
+        var letter = String.fromCharCode(e.getKey());
+        this.insertAtEachCursor(letter);
+      }      
     }
     
     this.draw();
