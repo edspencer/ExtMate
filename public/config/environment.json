@@ -23,7 +23,7 @@
   
   //All of the models in this application, found in the app/models folder
   "models": [
-    "Document", "Cursor"
+    "Document", "Cursor", "Selection"
   ],
   
   //All of the controllers in this application, found in the app/controllers folder

@@ -48,7 +48,7 @@ ExtMVC.registerView('documents', 'editor', {
        * @type String
        * Hex color string to fill the gutter width
        */
-      gutterColor: "#dddddd",
+      gutterColor: "#DEDEDE",
       
       /**
        * @property gutterTextColor
@@ -83,17 +83,40 @@ ExtMVC.registerView('documents', 'editor', {
        * @type String
        * Hex color code for the cursor (defaults to '#000000')
        */
-      cursorColor: "#000000"
+      cursorColor: "#000000",
+      
+      /**
+       * @property cursors
+       * @type Array
+       * Array containing all of the cursors for this canvas. There is always at least 1 cursor
+       */
+      cursors: [],
+      
+      /**
+       * @property selections
+       * @type Array
+       * Array containing all Selections currently made on this canvas's document
+       */
+      selections: [],
+      
+      /**
+       * @property isSelecting
+       * @type Boolean
+       * True if the user is currently dragging out a selection
+       */
+      isSelecting: false,
+      
+      /**
+       * @property selectionColor
+       * @type String
+       * Hex value of the selection highlight
+       */
+      selectionColor: "#E1EEFF"
     });
     
     Ext.Panel.prototype.constructor.call(this, config);
     
-    /**
-     * @property cursors
-     * @type Array
-     * Array containing all of the cursors for this canvas. There is always at least 1 cursor
-     */
-    this.cursors = [];
+
     this.addDefaultCursor();
     
     this.addEvents(
@@ -140,8 +163,10 @@ ExtMVC.registerView('documents', 'editor', {
     this.setFont(this.font, false);
     
     el.on({
-      scope: this,
-      click: this.onClick
+      scope    : this,
+      click    : this.onClick,
+      mousedown: this.startSelection
+      // mouseup  : this.endSelection
     });
     
     Ext.get(document).on('keypress', this.onKeyPress, this);
@@ -195,8 +220,65 @@ ExtMVC.registerView('documents', 'editor', {
     };
     
     this.drawGutter();
+    this.drawSelections();
     this.drawLines(lines);
     this.drawCursors();
+  },
+  
+  /**
+   * @private
+   * Attached to mousedown event, records line/column of selection start
+   */
+  startSelection: function(e) {
+    this.isSelecting = true;
+    this.selectionStart = this.cursorPositionForEvent(e);
+  },
+  
+  /**
+   * @private
+   * Attached to mouseup event, records line/column of selection end and creates a selection if appropriate
+   * @param {Ext.EventObject} e The mouseup event
+   * @return {Boolean} True if a selection was made, false if the user just clicked
+   */
+  endSelection: function(e) {
+    this.isSelecting = false;
+    
+    var coords   = this.cursorPositionForEvent(e),
+        selStart = this.selectionStart;
+    
+    //don't create a selection if mousedown location is same as mouseup location
+    if (coords.column == selStart.column && coords.line == selStart.line) return false;
+    
+    var selection = ExtMVC.buildModel("Selection", {
+      start: selStart,
+      end  : coords
+    });
+    
+    if (!e.ctrlKey) this.clearSelections(false);
+    this.addSelection(selection);
+    
+    return true;
+  },
+  
+  /**
+   * Adds a selection to the array
+   * @param {ExtMate.models.Selection} selection The selection to add
+   * @param {Boolean} redraw True to automatically redraw (defaults to true)
+   */
+  addSelection: function(selection, redraw) {
+    this.selections.push(selection);
+    
+    if (redraw !== false) this.draw();
+  },
+  
+  /**
+   * Clears all current selections
+   * @param {Boolean} redraw True to automatically redraw (defaults to true)
+   */
+  clearSelections: function(redraw) {
+    this.selections = [];
+    
+    if (redraw !== false) this.draw();
   },
   
   /**
@@ -267,6 +349,33 @@ ExtMVC.registerView('documents', 'editor', {
       );
       
       c.fillRect(0, 0, -this.cursorWidth, -this.lineHeight);
+      
+      c.restore();
+    }, this);
+  },
+  
+  /**
+   * Draws each selection in turn
+   */
+  drawSelections: function() {
+    var c = this.getContext();
+    
+    Ext.each(this.selections, function(selection) {
+      c.save();
+      c.fillStyle = this.selectionColor;
+      var start = selection.get('start'),
+          end   = selection.get('end');
+      
+      if (start.line == end.line) {
+        var selWidth = Math.round(this.getColumnWidth() * (end.column - start.column));
+        
+        c.translate(
+          this.getLineStartX() + ((start.column - 1) * this.getColumnWidth()), 
+          this.lineHeight * (start.line - this.firstLineNumber)
+        );
+        
+        c.fillRect(0, 0, selWidth, this.lineHeight);
+      }
       
       c.restore();
     }, this);
@@ -364,17 +473,10 @@ ExtMVC.registerView('documents', 'editor', {
    * @param {Ext.EventObject} e The event object
    */
   onClick: function(e) {
-    this.el.focus();
+    var madeSelection = this.endSelection(e);
     
     //normalise click XY data to make it relative to the canvas element instead of the page
-    var elXY = this.el.getXY(),
-        elX  = elXY[0],
-        elY  = elXY[1],
-        xy   = e.getXY(),
-        x    = xy[0] - elX,
-        y    = xy[1] - elY;
-    
-    var coords = this.cursorPositionForCoords(x, y);
+    var coords = this.cursorPositionForEvent(e);
     
     if (e.ctrlKey) {
       var cursor = ExtMVC.buildModel("Cursor", {
@@ -385,6 +487,7 @@ ExtMVC.registerView('documents', 'editor', {
       this.addCursor(cursor);
     } else {
       this.removeCursors();
+      if (!madeSelection) this.clearSelections(false);
       
       var cursor = this.cursors[0];
       cursor.moveTo(coords.line, coords.column);
@@ -411,6 +514,21 @@ ExtMVC.registerView('documents', 'editor', {
    */
   removeCursors: function() {
     this.cursors = [this.cursors[0]];
+  },
+  
+  /**
+   * Returns the normalised line/column numbers for a click event
+   * @param {Ext.EventObject} e The event object
+   */
+  cursorPositionForEvent: function(e) {
+    var elXY = this.el.getXY(),
+        elX  = elXY[0],
+        elY  = elXY[1],
+        xy   = e.getXY(),
+        x    = xy[0] - elX,
+        y    = xy[1] - elY;
+        
+    return this.cursorPositionForCoords(x, y);
   },
   
   /**
