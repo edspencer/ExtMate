@@ -14,7 +14,10 @@ ExtMVC.registerView('documents', 'edit', {
      * The canvas editor bound to this panel
      */
     this.editor =  ExtMVC.buildView("documents", "editor", {
-      
+      listeners: {
+        scope         : this,
+        'cursor-moved': this.updateCursorLocation
+      }
     });
           
     Ext.applyIf(config, {
@@ -45,6 +48,15 @@ ExtMVC.registerView('documents', 'edit', {
     this.editor.bind(instance);
   },
   
+  /**
+   * Updates the cursor status text
+   * @param {ExtMate.models.Cursor} cursor The cursor
+   */
+  updateCursorLocation: function(cursor) {
+    this.lineNumber.setText("Line: " + cursor.get('line'));
+    this.columnNumber.setText("Column: " + cursor.get('column'));
+  },
+  
   loadFakeRecord: function() {
     var doc = ExtMVC.buildModel("Document", {
       body: "abcde\n  This is a test\nabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxy"
@@ -60,7 +72,7 @@ ExtMVC.registerView('documents', 'edit', {
      * Displays the current line number
      */
     this.lineNumber = new Ext.Toolbar.TextItem({
-      text: "Line: 24"
+      text: "Line: 1"
     });
     
     /**
@@ -69,7 +81,7 @@ ExtMVC.registerView('documents', 'edit', {
      * Displays the current column number
      */
     this.columnNumber = new Ext.Toolbar.TextItem({
-      text: "Column 18"
+      text: "Column 1"
     });
     
     /**

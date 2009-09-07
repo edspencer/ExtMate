@@ -96,6 +96,15 @@ ExtMVC.registerView('documents', 'editor', {
     this.cursors = [];
     this.addDefaultCursor();
     
+    this.addEvents(
+      /**
+       * @event cursor-moved
+       * Fires when the main cursor has moved
+       * @param {ExtMate.models.Cursor} cursor The cursor that moved
+       */
+      'cursor-moved'
+    );
+    
     this.on('render', this.initCanvas, this);
   },
   
@@ -108,7 +117,7 @@ ExtMVC.registerView('documents', 'editor', {
       column: 1
     });
     
-    this.cursors.push(cursor);
+    this.addCursor(cursor);
   },
   
   /**
@@ -149,6 +158,10 @@ ExtMVC.registerView('documents', 'editor', {
      * The Document instance currently bound to this editor
      */
     this.instance = instance;
+    
+    this.eachCursor(function(cursor) {
+      cursor.constrainTo(instance);
+    });
     
     if (this.rendered) {
       this.draw();
@@ -300,6 +313,8 @@ ExtMVC.registerView('documents', 'editor', {
           case 40: cursor.moveDown();  break;
         }
       });
+      
+      this.fireEvent('cursor-moved', this.cursors[0]);
     } else if (e.isSpecialKey()) {
       console.log('special');
       console.log(e);
@@ -363,7 +378,7 @@ ExtMVC.registerView('documents', 'editor', {
     
     if (e.ctrlKey) {
       var cursor = ExtMVC.buildModel("Cursor", {
-        line: coords.line,
+        line  : coords.line,
         column: coords.column
       });
       
@@ -372,8 +387,9 @@ ExtMVC.registerView('documents', 'editor', {
       this.removeCursors();
       
       var cursor = this.cursors[0];
-      cursor.set('line', coords.line);
-      cursor.set('column', coords.column);
+      cursor.moveTo(coords.line, coords.column);
+      
+      this.fireEvent('cursor-moved', cursor);
     }
 
     this.draw();
@@ -382,9 +398,12 @@ ExtMVC.registerView('documents', 'editor', {
   /**
    * Adds a cursor to the collection
    * @param {ExtMate.models.Cursor} cursor The cursor to add
+   * @param {Boolean} constrain True to constrain the cursor to the document (defaults to true)
    */
-  addCursor: function(cursor) {
+  addCursor: function(cursor, constrain) {
     this.cursors.push(cursor);
+    
+    if (constrain !== false) cursor.constrainTo(this.instance);
   },
   
   /**

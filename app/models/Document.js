@@ -65,5 +65,13 @@ ExtMVC.registerModel("Document", {
         lines = body.split("\n");
         
     return lines[num - 1];
+  },
+  
+  /**
+   * Returns the number of lines in the document
+   * @return {Number} The number of lines in the document
+   */
+  getLineCount: function() {
+    return this.get('body').split("\n").length;
   }
 });
