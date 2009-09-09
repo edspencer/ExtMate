@@ -13,14 +13,7 @@ ExtMVC.registerController("documents", {
     var splits = id.split("-");
     
     return this.render("edit", {
-      title: splits[splits.length - 1],
-      listeners: {
-        scope: this,
-        'copy' : function() {
-          console.log('copying');
-          console.log(arguments);
-        }
-      }
+      title: splits[splits.length - 1]
     });
   },
   
@@ -39,9 +32,6 @@ ExtMVC.registerController("documents", {
    * @param {String} text The text to print
    */
   paste: function(text) {
-    console.log('paste');
-    console.log(this.getClipText());
-    
     var tab = this.getCurrentDocumentTab();
     
     if (tab != undefined) tab.editor.paste(this.getClipText());
