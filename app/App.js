@@ -62,31 +62,33 @@ ExtMVC.App.define({
     Ext.get('loading-mask').fadeOut({remove:true});
   },
   
+  /**
+   * @property ctrlKeys
+   * @type Object
+   * Object mapping key to documents controller action when the ctrl key is held down
+   */
+  ctrlKeys: {
+    'c': 'copy',
+    'v': 'paste',
+    'n': 'build',
+    'a': 'selectAll'
+  },
+  
   initializeKeyMap: function(panel) {
     /**
      * @property keymap
      * @type Ext.KeyMap
      * The global KeyMap object
      */
-    this.keymap = new Ext.KeyMap(document, [
-      {
-        key : 'n',
+    this.keymap = new Ext.KeyMap(document, []);
+        
+    Ext.iterate(this.ctrlKeys, function(key, action) {
+      this.keymap.addBinding({
+        key : key,
         ctrl: true,
-        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build']),
+        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', action]),
         stopEvent: true
-      },
-      {
-        key : 'c',
-        ctrl: true,
-        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'copy']),
-        stopEvent: true
-      },
-      {
-        key : 'v',
-        ctrl: true,
-        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'paste']),
-        stopEvent: true
-      }
-    ]);
+      });
+    }, this);
   }
 });

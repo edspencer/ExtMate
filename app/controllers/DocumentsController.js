@@ -18,13 +18,22 @@ ExtMVC.registerController("documents", {
   },
   
   /**
+   * Tells the currently selected tab to select all text
+   */
+  selectAll: function() {
+    this.withCurrentTab(function(tab) {
+      tab.editor.selectAll();
+    });
+  },
+  
+  /**
    * Copies the currently selected text from the current document
    * @return {String} The currently selected text
    */
   copy: function() {
-    var tab = this.getCurrentDocumentTab();
-    
-    if (tab != undefined) this.setClipText(tab.editor.getSelectedText());
+    this.withCurrentTab(function(tab) {
+      this.setClipText(tab.editor.getSelectedText());
+    });
   },
   
   /**
@@ -32,9 +41,20 @@ ExtMVC.registerController("documents", {
    * @param {String} text The text to print
    */
   paste: function(text) {
+    this.withCurrentTab(function(tab) {
+      tab.editor.paste(this.getClipText());
+    });
+  },
+  
+  /**
+   * Runs the given function with a single argument of the current tab
+   * @param {Function} fn The function to run
+   * @param {Object} scope Optional scope object
+   */
+  withCurrentTab: function(fn, scope) {
     var tab = this.getCurrentDocumentTab();
     
-    if (tab != undefined) tab.editor.paste(this.getClipText());
+    if (tab != undefined) fn.call(scope || this, tab);
   },
   
   /**

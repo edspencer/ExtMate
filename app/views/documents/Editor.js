@@ -488,6 +488,29 @@ ExtMVC.registerView('documents', 'editor', {
   },
   
   /**
+   * Removes all current selections and adds a new one which encompasses the whole document
+   * @return {ExtMate.models.Selection} The new selection instance
+   */
+  selectAll: function() {
+    var lineCount = this.instance.getLineCount(),
+        selection = ExtMVC.buildModel("Selection", {
+      start: {
+        line  : 1,
+        column: 1
+      },
+      end: {
+        line  : lineCount,
+        column: this.instance.getLine(lineCount).length
+      }
+    });
+    
+    this.clearSelections(false);
+    this.addSelection(selection);
+    
+    return selection;
+  },
+  
+  /**
    * Pastes the given text into the document
    * @param {String} text The text to paste
    */
