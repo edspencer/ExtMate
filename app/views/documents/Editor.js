@@ -385,7 +385,7 @@ ExtMVC.registerView('documents', 'editor', {
         
         c.translate(
           (start.column - 1) * this.getColumnWidth(),
-          this.lineHeight * (startLine - this.firstLineNumber)
+          this.lineHeight
         );
 
         c.fillRect(0, 0, selWidth, this.lineHeight);
@@ -401,7 +401,7 @@ ExtMVC.registerView('documents', 'editor', {
         
           switch (currentLine) {
             case startLine: //fill from the start to the end of the line
-              var selWidth = Math.round(this.getColumnWidth() * (this.getColumnCount() - start.column)),
+              var selWidth = Math.round(this.getColumnWidth() * (this.getColumnCount() - start.column + 1)),
                   startX   = (start.column - 1) * this.getColumnWidth();
             
               break;
@@ -539,7 +539,7 @@ ExtMVC.registerView('documents', 'editor', {
     var text = "";
     
     Ext.each(this.selections, function(selection) {
-      text = this.instance.getTextForSelection(selection);
+      text += this.instance.getTextForSelection(selection);
     }, this);
     
     return text;
