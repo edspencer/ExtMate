@@ -261,7 +261,7 @@ ExtMVC.registerView('documents', 'editor', {
     });
     
     if (!e.ctrlKey) this.clearSelections(false);
-    this.addSelection(selection);
+    this.addSelection(selection, false);
     
     return true;
   },
@@ -365,26 +365,84 @@ ExtMVC.registerView('documents', 'editor', {
    */
   drawSelections: function() {
     var c = this.getContext();
-    
+
     Ext.each(this.selections, function(selection) {
       c.save();
       c.fillStyle = this.selectionColor;
-      var start = selection.get('start'),
-          end   = selection.get('end');
       
-      if (start.line == end.line) {
+      var start       = selection.get('start'),
+          end         = selection.get('end'),
+          startLine   = start.line,
+          endLine     = end.line,
+          currentLine = start.line;
+      
+      //move the cursor to the end of the gutter
+      c.translate(this.getLineStartX(), (startLine - this.firstLineNumber - 1) * this.lineHeight);
+      
+      if (currentLine == endLine) {
+        //draw a single selected line
         var selWidth = Math.round(this.getColumnWidth() * (end.column - start.column));
         
         c.translate(
-          this.getLineStartX() + ((start.column - 1) * this.getColumnWidth()), 
-          this.lineHeight * (start.line - this.firstLineNumber)
+          (start.column - 1) * this.getColumnWidth(),
+          this.lineHeight * (startLine - this.firstLineNumber)
         );
-        
+
         c.fillRect(0, 0, selWidth, this.lineHeight);
+        
+      } else {
+        //draw multiple selected lines
+        while (currentLine <= endLine) {
+          var line   = this.instance.getLine(currentLine),
+              startX = 0;
+              
+          //move down 1 line
+          c.translate(0, this.lineHeight);
+        
+          switch (currentLine) {
+            case startLine: //fill from the start to the end of the line
+              var selWidth = Math.round(this.getColumnWidth() * (this.getColumnCount() - start.column)),
+                  startX   = (start.column - 1) * this.getColumnWidth();
+            
+              break;
+            case endLine: //fill in from the line start to the selection end point
+              var desiredWidth  = Math.round(this.getColumnWidth() * end.column),
+                  possibleWidth = Math.round(this.getColumnWidth() * this.instance.getLine(currentLine).length),
+                  selWidth      = Math.min(desiredWidth, possibleWidth);
+                              
+              break;
+            default: //fill in the whole line
+              var selWidth = this.getColumnWidth() * this.getColumnCount();
+          }
+          
+          c.save();
+          c.fillRect(startX, 0, selWidth, this.lineHeight);
+          c.restore();
+          
+          currentLine += 1;
+        }        
       }
       
       c.restore();
     }, this);
+  },
+  
+  /**
+   * Returns the number of columns currently avaialable on the canvas
+   * @return {Number} The number of available columns
+   */
+  getColumnCount: function() {
+    var width = this.el.getWidth() - this.getLineStartX();
+    
+    return Math.floor(width / this.getColumnWidth());
+  },
+  
+  /**
+   * Returns the number of lines currently available on the canvas
+   * @return {Number} The number of available lines
+   */
+  getLineCount: function() {
+    return Math.floor(this.el.getHeight() / this.lineHeight);
   },
   
   /**
