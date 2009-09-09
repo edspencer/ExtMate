@@ -68,6 +68,7 @@ ExtMVC.registerView('documents', 'edit', {
         "* <canvas> based\n" +
         "* Uses ExtJS MVC\n" +
         "* Aims to emulate E (http://e-texteditor.com)\n" +
+        "* < 1KLOC\n" +
         "\n" +
         "* Select + multiple select\n" +
         "* Multiple cursor support (ctrl + click)\n" +
