@@ -31,14 +31,14 @@ ExtMVC.registerModel("Document", {
    * @param {Number} columnNumber The column number
    * @return {Object} Object containing the column/line numbers of the previous white space element
    */
-  previousWhiteSpace: function(lineNumber, columnNumber) {
+  previousWord: function(lineNumber, columnNumber) {
     var line   = this.getLine(lineNumber),
         str    = line.substr(0, columnNumber),
         splits = str.split(" ");
-    
+
     var index = Ext.sum(Ext.pluck(splits, 'length'));
     if (index == -1) index = 0;
-    
+
     return {
       line  : lineNumber,
       column: index
@@ -131,5 +131,58 @@ ExtMVC.registerModel("Document", {
    */
   getLineCount: function() {
     return this.get('body').split("\n").length;
+  },
+  
+  /**
+   * Returns all text that should be selected according to a given Selection instance
+   * @param {ExtMate.models.Selection} selection The selection to get text for
+   * @return {String} The selected text
+   */
+  getTextForSelection: function(selection) {
+    return this.getTextBetween(selection.get('start'), selection.get('end'));
+  },
+  
+  /**
+   * Returns the segment of this document between the two points
+   * @param {Object} startCoords The line/column to retrieve from
+   * @param {Object} endCoords The line/column to retrieve until
+   * @return {String} The text segment
+   */
+  getTextBetween: function(startCoords, endCoords) {
+    var startCol = startCoords.column,
+        endCol   = endCoords.column;
+        
+    if (startCoords.line == endCoords.line) {
+      //just getting text on 1 line
+      var line = this.getLine(startCoords.line);
+      
+      return line.slice(startCol - 1, endCol - 1);
+    } else {
+      //multiline select
+      var currentLine = startCoords.line,
+          startLine   = startCoords.line,
+          endLine     = endCoords.line,
+          text        = "";
+      
+      while (startLine <= endLine) {
+        var line = this.getLine(currentLine);
+        currentLine += 1;
+        
+        if (currentLine == startLine) {
+          text += line.slice(startCol - 1);
+        } else if (currentLine == endLine) {
+          text += line.slice(0, endCol - 1);
+        } else {
+          text += line;
+        }
+      }
+      
+      return text;
+    }
   }
 });
+
+
+
+
+

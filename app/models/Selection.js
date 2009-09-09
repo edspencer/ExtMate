@@ -10,6 +10,6 @@ ExtMVC.registerModel("Selection", {
    * @return {String} The selected text
    */
   getSelectedText: function() {
-    
+    return this.get('document').getTextForSelection(this);
   }
 });

@@ -31,6 +31,8 @@ ExtMVC.registerView('documents', 'edit', {
     Ext.Panel.prototype.constructor.call(this, config);
     
     this.on('render', this.loadFakeRecord, this);
+    
+    this.relayEvents(this.editor, ['copy', 'paste']);
   },
   
   /**

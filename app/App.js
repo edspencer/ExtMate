@@ -74,6 +74,18 @@ ExtMVC.App.define({
         ctrl: true,
         fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'build']),
         stopEvent: true
+      },
+      {
+        key : 'c',
+        ctrl: true,
+        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'copy']),
+        stopEvent: true
+      },
+      {
+        key : 'v',
+        ctrl: true,
+        fn  : ExtMVC.dispatch.createDelegate(ExtMVC, ['documents', 'paste']),
+        stopEvent: true
       }
     ]);
   }

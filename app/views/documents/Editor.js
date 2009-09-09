@@ -116,7 +116,6 @@ ExtMVC.registerView('documents', 'editor', {
     
     Ext.Panel.prototype.constructor.call(this, config);
     
-
     this.addDefaultCursor();
     
     this.addEvents(
@@ -125,7 +124,14 @@ ExtMVC.registerView('documents', 'editor', {
        * Fires when the main cursor has moved
        * @param {ExtMate.models.Cursor} cursor The cursor that moved
        */
-      'cursor-moved'
+      'cursor-moved',
+      
+      /**
+       * @event paste
+       * Fires when text has been copied in
+       * @param {String} text The text that has been copied in
+       */
+      'paste'
     );
     
     this.on('render', this.initCanvas, this);
@@ -397,7 +403,7 @@ ExtMVC.registerView('documents', 'editor', {
     
     var actionTaken = false;
     
-    switch (e.getKey()) {
+    switch (e.getKey()) {        
       case e.ENTER:
         this.insertAtEachCursor("\n", false);
         this.eachCursor('moveDown');
@@ -410,7 +416,7 @@ ExtMVC.registerView('documents', 'editor', {
         actionTaken = true;
         break;
       case e.DELETE:
-        console.log('delete');
+        // console.log('delete');
         this.eachCursor(function(cursor) {
           this.instance.remove(cursor.get('line'), cursor.get('column') + 1);
         });
@@ -419,7 +425,14 @@ ExtMVC.registerView('documents', 'editor', {
         break;
       case e.BACKSPACE:
         this.eachCursor(function(cursor) {
-          this.instance.remove(cursor.get('line'), cursor.get('column'));
+          var line   = cursor.get('line'),
+              column = cursor.get('column'),
+              coords = e.ctrlKey
+                     ? {column: 1}
+                     : e.altKey ? this.instance.previousWord(line, column) : {column: column - 1},
+              amount = column - coords.column;
+              
+          this.instance.remove(line, column, amount);
           cursor.moveLeft();
         });
         
@@ -458,6 +471,42 @@ ExtMVC.registerView('documents', 'editor', {
     }
     
     this.draw();
+  },
+  
+  /**
+   * Returns all currently selected text
+   * @return {String} The currently selected text
+   */
+  getSelectedText: function() {
+    var text = "";
+    
+    Ext.each(this.selections, function(selection) {
+      text = this.instance.getTextForSelection(selection);
+    }, this);
+    
+    return text;
+  },
+  
+  /**
+   * Pastes the given text into the document
+   * @param {String} text The text to paste
+   */
+  paste: function(text) {
+    this.eachCursor(function(cursor) {
+      var line   = cursor.get('line'),
+          column = cursor.get('column');
+      
+      var obj = {
+        line  : line,
+        column: column,
+        text  : text
+      };
+      
+      this.instance.insert(obj);
+      cursor.moveTo(line, column + text.length);
+    });
+    
+    if (this.fireEvent('paste', text) !== false) this.draw();
   },
   
   /**

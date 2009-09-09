@@ -51,7 +51,7 @@ ExtMVC.registerModel("Cursor", {
   moveNextLeft: function() {
     if (this.doc == undefined) return;
     
-    var location = this.doc.previousWhiteSpace(this.get('line'), this.get('column'));
+    var location = this.doc.previousWord(this.get('line'), this.get('column'));
     
     if (location.line && location.column) this.moveTo(location.line, location.column);
   },
