@@ -164,7 +164,7 @@ ExtMVC.registerModel("Document", {
           endLine     = endCoords.line,
           text        = "";
       
-      while (startLine <= endLine) {
+      while (currentLine <= endLine) {
         var line = this.getLine(currentLine);
         currentLine += 1;
         
