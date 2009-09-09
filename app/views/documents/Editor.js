@@ -461,9 +461,9 @@ ExtMVC.registerView('documents', 'editor', {
 
         this.fireEvent('cursor-moved', this.cursors[0]);
       } else if (e.isSpecialKey()) {
-        console.log('special');
-        console.log(e);
-        console.log(e.getKey());
+        // console.log('special');
+        // console.log(e);
+        // console.log(e.getKey());
       } else {
         var letter = String.fromCharCode(e.getKey());
         this.insertAtEachCursor(letter);
@@ -558,6 +558,7 @@ ExtMVC.registerView('documents', 'editor', {
       });
       
       this.addCursor(cursor);
+      cursor.moveTo(cursor.get('line'), cursor.get('column'));
     } else {
       this.removeCursors();
       if (!madeSelection) this.clearSelections(false);

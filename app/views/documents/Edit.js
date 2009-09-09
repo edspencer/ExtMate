@@ -61,7 +61,17 @@ ExtMVC.registerView('documents', 'edit', {
   
   loadFakeRecord: function() {
     var doc = ExtMVC.buildModel("Document", {
-      body: "abcde\n  This is a test\nabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxyabcdefghijklmnopqrstuvqxy"
+      body: 
+        "ExtJS Text Editor\n" +
+        "About:\n" +
+        "\n" +
+        "* <canvas> based\n" +
+        "* Uses ExtJS MVC\n" +
+        "* Aims to emulate E (http://e-texteditor.com)\n" +
+        "\n" +
+        "* Select + multiple select\n" +
+        "* Multiple cursor support (ctrl + click)\n" +
+        "* Copy/Paste + paste to multiple"
     });
     
     this.loadRecord(doc);
