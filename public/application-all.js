@@ -42,12 +42,22 @@ ExtMVC.App.define({
       enableTabScroll: true
     });
     
+    /**
+     * @property scroller
+     * @type Ext.Panel
+     * The scroller proxy
+     */
+    this.scroller = ExtMVC.buildView("documents", "scroller", {
+      region: 'east',
+      layout: 'fit'
+    });
+    
     this.viewport = new Ext.Viewport({
       layout: 'fit',
       items : [
         {
           layout: 'border',
-          items :  [this.menu, this.main],
+          items :  [this.menu, this.main, this.scroller],
           tbar  : ExtMVC.buildView('layout', 'toolbar')
         }
       ]
@@ -60,6 +70,8 @@ ExtMVC.App.define({
     
     Ext.get('loading').remove();  
     Ext.get('loading-mask').fadeOut({remove:true});
+    
+    // this.scroller.setScrollerHeight(2000);
   },
   
   /**
@@ -513,9 +525,7 @@ ExtMVC.registerController("index", {
   index: function() {
     //open up a couple of dummy files
     Ext.each(['IndexController.js'], function(file) {
-      this.render('documents', 'edit', {
-        title: file
-      });
+      ExtMVC.dispatch('documents', 'edit', ['app-controllers-IndexController.js']);
     }, this);
   }
 });
@@ -535,7 +545,11 @@ ExtMVC.registerController("documents", {
     var splits = id.split("-");
     
     return this.render("edit", {
-      title: splits[splits.length - 1]
+      title: splits[splits.length - 1],
+      listeners: {
+        scope : this,
+        scroll: this.updateScroller
+      }
     });
   },
   
@@ -577,6 +591,21 @@ ExtMVC.registerController("documents", {
     var tab = this.getCurrentDocumentTab();
     
     if (tab != undefined) fn.call(scope || this, tab);
+  },
+  
+  /**
+   * Updates the scroller proxy by resizing and moving it in line with the document currently in view
+   * @param {Number} topLine The top line in view
+   * @param {Number} totalLines The total number of lines
+   * @param {Number} docHeight The height of the document <canvas>
+   */
+  updateScroller: function(topLine, totalLines, docHeight) {
+    var scroller   = ExtMVC.app.scroller,
+        sHeight    = scroller.getHeight(),
+        lineHeight = docHeight / totalLines;
+        
+    scroller.setScrollerHeight(docHeight);
+    scroller.scrollTo(topLine * lineHeight);
   },
   
   /**
@@ -855,7 +884,7 @@ ExtMVC.registerView('documents', 'edit', {
         'cursor-moved': this.updateCursorLocation
       }
     });
-          
+    
     Ext.applyIf(config, {
       bbar  : this.buildBottomToolbar(),
       layout: 'fit',
@@ -868,7 +897,7 @@ ExtMVC.registerView('documents', 'edit', {
     
     this.on('render', this.loadFakeRecord, this);
     
-    this.relayEvents(this.editor, ['copy', 'paste']);
+    this.relayEvents(this.editor, ['copy', 'paste', 'scroll']);
   },
   
   /**
@@ -894,7 +923,7 @@ ExtMVC.registerView('documents', 'edit', {
     this.lineNumber.setText("Line: " + cursor.get('line'));
     this.columnNumber.setText("Column: " + cursor.get('column'));
   },
-  
+    
   loadFakeRecord: function() {
     var doc = ExtMVC.buildModel("Document", {
       body: 
@@ -1112,7 +1141,15 @@ ExtMVC.registerView('documents', 'editor', {
        * Fires when text has been copied in
        * @param {String} text The text that has been copied in
        */
-      'paste'
+      'paste',
+      
+      /**
+       * @event scroll
+       * Fires when the editor has just been scrolled
+       * @param {Number} lineNumber The line number that was scrolled to
+       * @param {Number} totalLines The total number of lines in the document
+       */
+      'scroll'
     );
     
     this.on('render', this.initCanvas, this);
@@ -1812,6 +1849,14 @@ ExtMVC.registerView('documents', 'editor', {
   },
   
   /**
+   * Returns the total height the canvas would have to be to render all lines
+   * @return {Number} The document's height in pixels
+   */
+  getTotalHeight: function() {
+    return this.instance.getLineCount() * this.lineHeight;
+  },
+  
+  /**
    * Returns the last visible line number
    * @return {Number} The line number of the last visible line
    */
@@ -1838,8 +1883,13 @@ ExtMVC.registerView('documents', 'editor', {
     // console.log('minus: ' + minusLineCount);
     // console.log('max possible:' + maxPossible);
     // console.log('scroll to ' + lineNumber);
-    this.firstLineNumber = lineNumber;
-    if (redraw !== false) this.draw();
+    if (lineNumber != this.firstLineNumber) {
+      this.firstLineNumber = lineNumber;
+      if (redraw !== false) this.draw();
+    
+      this.fireEvent('scroll', lineNumber, this.instance.getLineCount(), this.getTotalHeight());      
+    }
+
   },
   
   /**
@@ -1884,6 +1934,47 @@ ExtMVC.registerView('documents', 'new', {
         }
       ]
     });
+  }
+});
+
+/**
+ * A panel which exists solely to provide a scroller for the canvas
+ */
+ExtMVC.registerView('documents', 'scroller', {
+  xtype: 'panel',
+  width: 16,
+  frame: false,
+  border: false,
+  plain : true,
+  autoScroll: true,
+  
+  html : {
+    cls   : 'scroller-proxy',
+    style : 'overflow: auto; height: 20px;'
+  },
+  
+  /**
+   * @property scrollerHeight
+   * @type Number
+   * The current height of the internal scroller div
+   */
+  scrollerHeight: 10,
+  
+  /**
+   * Updates the internal scroller element
+   * @param {Number} height The new height to set
+   */
+  setScrollerHeight: function(height) {
+    this.body.child('div.scroller-proxy').setHeight(height);
+  },
+  
+  /**
+   * Scrolls the internal scroller proxy to the desired location
+   * @param {Number} position The y position to scroll to
+   */
+  scrollTo: function(position) {
+    console.log('scroll: ' + position);
+    this.body.child('div.scroller-proxy').scrollTo('top', position);
   }
 });
 

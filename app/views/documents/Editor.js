@@ -131,7 +131,15 @@ ExtMVC.registerView('documents', 'editor', {
        * Fires when text has been copied in
        * @param {String} text The text that has been copied in
        */
-      'paste'
+      'paste',
+      
+      /**
+       * @event scroll
+       * Fires when the editor has just been scrolled
+       * @param {Number} lineNumber The line number that was scrolled to
+       * @param {Number} totalLines The total number of lines in the document
+       */
+      'scroll'
     );
     
     this.on('render', this.initCanvas, this);
@@ -831,6 +839,14 @@ ExtMVC.registerView('documents', 'editor', {
   },
   
   /**
+   * Returns the total height the canvas would have to be to render all lines
+   * @return {Number} The document's height in pixels
+   */
+  getTotalHeight: function() {
+    return this.instance.getLineCount() * this.lineHeight;
+  },
+  
+  /**
    * Returns the last visible line number
    * @return {Number} The line number of the last visible line
    */
@@ -857,8 +873,13 @@ ExtMVC.registerView('documents', 'editor', {
     // console.log('minus: ' + minusLineCount);
     // console.log('max possible:' + maxPossible);
     // console.log('scroll to ' + lineNumber);
-    this.firstLineNumber = lineNumber;
-    if (redraw !== false) this.draw();
+    if (lineNumber != this.firstLineNumber) {
+      this.firstLineNumber = lineNumber;
+      if (redraw !== false) this.draw();
+    
+      this.fireEvent('scroll', lineNumber, this.instance.getLineCount(), this.getTotalHeight());      
+    }
+
   },
   
   /**

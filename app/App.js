@@ -42,12 +42,22 @@ ExtMVC.App.define({
       enableTabScroll: true
     });
     
+    /**
+     * @property scroller
+     * @type Ext.Panel
+     * The scroller proxy
+     */
+    this.scroller = ExtMVC.buildView("documents", "scroller", {
+      region: 'east',
+      layout: 'fit'
+    });
+    
     this.viewport = new Ext.Viewport({
       layout: 'fit',
       items : [
         {
           layout: 'border',
-          items :  [this.menu, this.main],
+          items :  [this.menu, this.main, this.scroller],
           tbar  : ExtMVC.buildView('layout', 'toolbar')
         }
       ]
@@ -60,6 +70,8 @@ ExtMVC.App.define({
     
     Ext.get('loading').remove();  
     Ext.get('loading-mask').fadeOut({remove:true});
+    
+    // this.scroller.setScrollerHeight(2000);
   },
   
   /**

@@ -19,7 +19,7 @@ ExtMVC.registerView('documents', 'edit', {
         'cursor-moved': this.updateCursorLocation
       }
     });
-          
+    
     Ext.applyIf(config, {
       bbar  : this.buildBottomToolbar(),
       layout: 'fit',
@@ -32,7 +32,7 @@ ExtMVC.registerView('documents', 'edit', {
     
     this.on('render', this.loadFakeRecord, this);
     
-    this.relayEvents(this.editor, ['copy', 'paste']);
+    this.relayEvents(this.editor, ['copy', 'paste', 'scroll']);
   },
   
   /**
@@ -58,7 +58,7 @@ ExtMVC.registerView('documents', 'edit', {
     this.lineNumber.setText("Line: " + cursor.get('line'));
     this.columnNumber.setText("Column: " + cursor.get('column'));
   },
-  
+    
   loadFakeRecord: function() {
     var doc = ExtMVC.buildModel("Document", {
       body: 

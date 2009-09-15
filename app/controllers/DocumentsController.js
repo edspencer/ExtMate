@@ -13,7 +13,11 @@ ExtMVC.registerController("documents", {
     var splits = id.split("-");
     
     return this.render("edit", {
-      title: splits[splits.length - 1]
+      title: splits[splits.length - 1],
+      listeners: {
+        scope : this,
+        scroll: this.updateScroller
+      }
     });
   },
   
@@ -55,6 +59,21 @@ ExtMVC.registerController("documents", {
     var tab = this.getCurrentDocumentTab();
     
     if (tab != undefined) fn.call(scope || this, tab);
+  },
+  
+  /**
+   * Updates the scroller proxy by resizing and moving it in line with the document currently in view
+   * @param {Number} topLine The top line in view
+   * @param {Number} totalLines The total number of lines
+   * @param {Number} docHeight The height of the document <canvas>
+   */
+  updateScroller: function(topLine, totalLines, docHeight) {
+    var scroller   = ExtMVC.app.scroller,
+        sHeight    = scroller.getHeight(),
+        lineHeight = docHeight / totalLines;
+        
+    scroller.setScrollerHeight(docHeight);
+    scroller.scrollTo(topLine * lineHeight);
   },
   
   /**
