@@ -113,6 +113,23 @@ ExtMVC.registerModel("Document", {
   },
   
   /**
+   * Returns an array of lines starting at the start line and for the given total
+   */
+  getLines: function(startLine, total) {
+    var currentLine = startLine,
+        endLine     = Math.min(startLine + total, this.getLineCount()),
+        lines       = [];
+    
+    while (currentLine <= endLine) {
+      lines.push(this.getLine(currentLine));
+      
+      currentLine += 1;
+    }
+    
+    return lines;
+  },
+  
+  /**
    * Removes the given line by number
    * @param {Number} lineNumber The line to remove
    */

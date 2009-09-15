@@ -176,6 +176,24 @@ ExtMVC.registerView('documents', 'editor', {
     });
     
     Ext.get(document).on('keypress', this.onKeyPress, this);
+    
+    el.on('DOMMouseScroll', function(e) {
+      this.fireEvent('wheelscroll', e.getWheelDelta());
+    }, this);
+    
+    this.addEvents(
+      /**
+       * @event wheelscroll
+       * Fired when the user wishes to scroll up or down using the mouse wheel
+       * @param {Number} amount The amount the user wants to scroll (negative amounts mean scroll down)
+       */
+      'wheelscroll'
+    );
+    
+    this.on('wheelscroll', function(amount) {
+      var delta = this.firstLineNumber - Math.round(amount * 3);
+      this.scrollTo(delta);
+    }, this);
   },
   
   /**
@@ -208,8 +226,7 @@ ExtMVC.registerView('documents', 'editor', {
     this.clear();
     
     var instance    = this.instance,
-        body        = instance.get('body'),
-        rawLines    = body.split("\n"),
+        rawLines    = instance.getLines(this.firstLineNumber, this.getVisibleLineCount()),
         
         lineCount   = rawLines.length,
         lines       = [],
@@ -220,7 +237,7 @@ ExtMVC.registerView('documents', 'editor', {
     
     for (var i=0; i < rawLines.length; i++) {
       lines.push({
-        number: i + 1,
+        number: this.firstLineNumber + i,
         text  : rawLines[i]
       });
     };
@@ -321,6 +338,8 @@ ExtMVC.registerView('documents', 'editor', {
   drawLines: function(lines) {
     var c = this.getContext();
     c.save();
+    
+    var numLines = this.getVisibleLineCount();
     
     for (var i=0; i < lines.length; i++) {
       var line = lines[i];
@@ -450,6 +469,7 @@ ExtMVC.registerView('documents', 'editor', {
    */
   clear: function() {
     this.getContext().clearRect(0, 0, this.el.getWidth(), this.el.getHeight());
+    // this.el.dom.height = this.el.dom.height;
   },
   
   /**
@@ -466,6 +486,15 @@ ExtMVC.registerView('documents', 'editor', {
         this.insertAtEachCursor("\n", false);
         this.eachCursor('moveDown');
         this.eachCursor("moveFarLeft");
+        
+        if (this.cursors.length == 1) {
+          var cursor = this.cursors[0];
+          
+          this.scrollIntoView({
+            line  : cursor.get('line'),
+            column: cursor.get('column')
+          });
+        }
         
         actionTaken = true;
         break;
@@ -513,15 +542,17 @@ ExtMVC.registerView('documents', 'editor', {
           if (e.ctrlKey) modifier = 'Far';
           if (e.altKey)  modifier = 'Next';
           
-          var fnName = String.format("move{0}{1}", modifier, directions[e.getKey()]);
-          cursor[fnName]();
+          var fnName    = String.format("move{0}{1}", modifier, directions[e.getKey()]),
+              newCoords = cursor[fnName]();
+          
+          this.scrollIntoView(newCoords);
         });
 
         this.fireEvent('cursor-moved', this.cursors[0]);
       } else if (e.isSpecialKey()) {
-        // console.log('special');
-        // console.log(e);
-        // console.log(e.getKey());
+        console.log('special');
+        console.log(e);
+        console.log(e.getKey());
       } else {
         var letter = String.fromCharCode(e.getKey());
         this.insertAtEachCursor(letter);
@@ -789,5 +820,60 @@ ExtMVC.registerView('documents', 'editor', {
    */
   getLineStartX: function() {
     return this.gutterWidth + this.gutterMargin;
+  },
+  
+  /**
+   * Returns the number of lines the canvas has room to render based on its current height. 
+   * @return {Number} The number of lines (fractional - some functions should Math.ceil it)
+   */
+  getVisibleLineCount: function() {
+    return Math.ceil(this.getEl().dom.height / this.lineHeight);
+  },
+  
+  /**
+   * Returns the last visible line number
+   * @return {Number} The line number of the last visible line
+   */
+  getBottomVisibleLineNumber: function() {
+    return Math.min(this.instance.getLineCount(), (this.firstLineNumber - 1) + this.getVisibleLineCount());
+  },
+  
+  /**
+   * Attempts to scroll the document so that the line number provided is the first one visible
+   * @param {Number} lineNumber The line number to attempt to scroll to
+   * @param {Boolean} redraw True to redraw (defaults to true)
+   * @return {Number} lineNumber The new top line number. This will usually be the line number
+   * provided, unless scrolling to the extremes of the document
+   */
+  scrollTo: function(lineNumber, redraw) {
+    var minusLineCount = this.instance.getLineCount() - this.getVisibleLineCount(),
+        maxPossible    = Math.max(minusLineCount, 1);
+        
+    if (lineNumber <= 0) lineNumber = 1;
+    
+    lineNumber = Math.min(lineNumber, maxPossible);
+    
+    // console.log('doc:' + this.instance.getLineCount());
+    // console.log('minus: ' + minusLineCount);
+    // console.log('max possible:' + maxPossible);
+    // console.log('scroll to ' + lineNumber);
+    this.firstLineNumber = lineNumber;
+    if (redraw !== false) this.draw();
+  },
+  
+  /**
+   * If the given line/column combo are already in view, this does nothing. Otherwise, attempts to scroll so that
+   * the line and column are both in the current canvas viewport
+   * @param {Object} coords line and column co-ordinates
+   */
+  scrollIntoView: function(coords) {
+    var aboveTop  = coords.line < this.firstLineNumber,
+        belowBot  = coords.line > this.getBottomVisibleLineNumber();
+    
+    if (aboveTop) {
+      this.scrollTo(coords.line);
+    } else if (belowBot) {
+      this.scrollTo(coords.line - this.getVisibleLineCount());
+    }
   }
 });

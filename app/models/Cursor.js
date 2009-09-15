@@ -19,6 +19,10 @@ ExtMVC.registerModel("Cursor", {
     this.doc = doc;
   },
   
+  /**
+   * Moves this cursor to the specified line and column, with bounds checking if bound to a document
+   * @return {Object} Object containing the new line and column numbers
+   */
   moveTo: function(line, column) {
     //constrain to top lef
     line   = Math.max(line, 1);
@@ -32,6 +36,11 @@ ExtMVC.registerModel("Cursor", {
     
     this.set('line',   line);
     this.set('column', column);
+    
+    return {
+      line  : this.get('line'),
+      column: this.get('column')
+    };
   },
   
   /**
@@ -42,7 +51,7 @@ ExtMVC.registerModel("Cursor", {
     
     var location = this.doc.nextWhiteSpace(this.get('line'), this.get('column'));
     
-    if (location.line && location.column) this.moveTo(location.line, location.column);
+    if (location.line && location.column) return this.moveTo(location.line, location.column);
   },
   
   /**
@@ -53,7 +62,7 @@ ExtMVC.registerModel("Cursor", {
     
     var location = this.doc.previousWord(this.get('line'), this.get('column'));
     
-    if (location.line && location.column) this.moveTo(location.line, location.column);
+    if (location.line && location.column) return this.moveTo(location.line, location.column);
   },
   
   moveNextUp  : function() {},
@@ -63,7 +72,7 @@ ExtMVC.registerModel("Cursor", {
    * Moves the cursor as far to the left as possible
    */
   moveFarLeft: function() {
-    this.moveTo(this.get('line'), 1);
+    return this.moveTo(this.get('line'), 1);
   },
   
   /**
@@ -74,14 +83,14 @@ ExtMVC.registerModel("Cursor", {
     
     var lineLength = this.doc.getLine(this.get('line')).length;
     
-    this.moveTo(this.get('line'), lineLength + 1);
+    return this.moveTo(this.get('line'), lineLength + 1);
   },
   
   /**
    * Moves the cursor as far up as possible
    */
   moveFarUp: function() {
-    this.moveTo(1, this.get('column'));
+    return this.moveTo(1, this.get('column'));
   },
   
   /**
@@ -90,7 +99,7 @@ ExtMVC.registerModel("Cursor", {
   moveFarDown: function() {
     if (this.doc == undefined) return;
     
-    this.moveTo(this.doc.getLineCount(), this.get('column'));
+    return this.moveTo(this.doc.getLineCount(), this.get('column'));
   },
   
   moveLeft: function() {
@@ -98,9 +107,9 @@ ExtMVC.registerModel("Cursor", {
       var lineNum    = this.get('line') - 1,
           lineLength = this.doc.getLine(lineNum).length;
           
-      this.moveTo(lineNum, lineLength + 1);
+      return this.moveTo(lineNum, lineLength + 1);
     } else {
-      this.move('column', -1);
+      return this.move('column', -1);
     }
   },
   
@@ -109,18 +118,18 @@ ExtMVC.registerModel("Cursor", {
         lineLength = this.doc.getLine(lineNum).length;
         
     if (this.get('column') == lineLength + 1) {
-      this.moveTo(this.get('line') + 1, 1);
+      return this.moveTo(this.get('line') + 1, 1);
     } else {
-      this.move('column', 1);
+      return this.move('column', 1);
     }
   },
   
   moveUp: function() {
-    this.move('line', -1);
+    return this.move('line', -1);
   },
   
   moveDown: function() {
-    this.move('line', 1);
+    return this.move('line', 1);
   },
   
   /**
@@ -135,6 +144,6 @@ ExtMVC.registerModel("Cursor", {
         dLine   = axis == 'line' ? delta : 0,
         dColumn = axis == 'column' ? delta : 0;
     
-    this.moveTo(line + dLine, column + dColumn);
+    return this.moveTo(line + dLine, column + dColumn);
   }
 });
